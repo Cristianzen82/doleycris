@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Invitación D&C</title>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Raleway:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  background:#1a0e2a;
+  font-family:'Cormorant Garamond',serif;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:manipulation;
+}
+
+/* ════════════════════════════════
+   SCENE CONTAINER
+════════════════════════════════ */
+#scene {
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  perspective:800px;
+}
+
+/* ════════════════════════════════
+   BACKGROUND — watercolor ballroom
+════════════════════════════════ */
+#bg {
+  position:absolute; inset:0;
+  overflow:hidden;
+  opacity:0;
+  animation: bgReveal 2.4s 0.2s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+@keyframes bgReveal {
+  0%   { opacity:0; transform:scale(1.06); }
+  100% { opacity:1; transform:scale(1); }
+}
+
+/* Sky gradient */
+#bg-sky {
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 20%,
+    #f5e8d5 0%, #e8d0b8 25%, #c8a898 50%, #7a4a6a 75%, #3a1a4a 100%);
+}
+
+/* Vignette */
+#bg::after {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 50%,
+    transparent 20%, rgba(15,8,28,0.55) 80%, rgba(15,8,28,0.85) 100%);
+}
+
+/* ════════════════════════════════
+   WISTERIA — decorative corners
+════════════════════════════════ */
+.wisteria {
+  position:absolute; bottom:0;
+  pointer-events:none; z-index:2;
+  opacity:0;
+  animation: wisAppear 1.6s 2.4s ease forwards;
+}
+.wisteria.left  { left:0;  width:min(180px,38vw); transform-origin:bottom left; }
+.wisteria.right { right:0; width:min(180px,38vw); transform-origin:bottom right; transform:scaleX(-1); }
+@keyframes wisAppear { to { opacity:0.75; } }
+
+/* ════════════════════════════════
+   ENVELOPE WRAPPER
+════════════════════════════════ */
+#env-wrap {
+  position:relative;
+  z-index:10;
+  width:min(300px,82vw);
+  opacity:0;
+  transform: translateY(70px) scale(0.85);
+  animation: envAppear 1s 2s cubic-bezier(0.34,1.5,0.64,1) forwards;
+}
+@keyframes envAppear {
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+#env-wrap.floating {
+  animation: envAppear 1s 2s cubic-bezier(0.34,1.5,0.64,1) forwards,
+             float 3.5s 3.2s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform:translateY(0) rotate(0deg); }
+  33%      { transform:translateY(-9px) rotate(0.4deg); }
+  66%      { transform:translateY(-4px) rotate(-0.3deg); }
+}
+
+/* ── LETTER (behind envelope) ── */
+#letter {
+  position:absolute;
+  bottom:18%; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  width:80%;
+  z-index:4;
+  opacity:0;
+  transition: opacity 0.7s, transform 0.9s cubic-bezier(0.34,1.2,0.64,1);
+  pointer-events:none;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+}
+#letter.risen {
+  opacity:1;
+  transform:translateX(-50%) translateY(-62%);
+  pointer-events:auto;
+}
+
+/* ── ENVELOPE SVG layers ── */
+#env-svg {
+  position:relative; width:100%;
+  cursor:pointer;
+  filter:drop-shadow(0 16px 48px rgba(0,0,0,0.55)) drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+  z-index:6;
+}
+
+/* Individual layers inside env-svg */
+.env-layer {
+  position:absolute; inset:0; width:100%; height:100%;
+  transition:opacity 0.12s ease;
+}
+#layer-closed   { opacity:1; position:relative; }
+#layer-cracking { opacity:0; }
+#layer-opening  { opacity:0; }
+#layer-open     { opacity:0; }
+
+/* ── SEAL PULSE RING ── */
+#seal-ring {
+  position:absolute;
+  left:50%; bottom:34%;
+  transform:translateX(-50%);
+  width:68px; height:68px;
+  border-radius:50%;
+  border:2px solid rgba(200,120,120,0.6);
+  pointer-events:none;
+  animation:sealPulse 2s 3.4s ease-in-out infinite;
+  z-index:20;
+}
+@keyframes sealPulse {
+  0%   { transform:translateX(-50%) scale(1);    opacity:0.7; }
+  70%  { transform:translateX(-50%) scale(1.55); opacity:0; }
+  100% { transform:translateX(-50%) scale(1);    opacity:0; }
+}
+
+/* ── CRACK PARTICLES ── */
+#particles {
+  position:absolute;
+  left:50%; bottom:34%;
+  transform:translateX(-50%);
+  width:70px; height:70px;
+  pointer-events:none;
+  z-index:25;
+}
+.particle {
+  position:absolute;
+  border-radius:2px;
+  opacity:0;
+  top:50%; left:50%;
+}
+
+/* ── TAP HINTS ── */
+#hint-seal {
+  position:absolute; bottom:-38px; left:50%;
+  transform:translateX(-50%);
+  color:rgba(255,245,235,0.65);
+  font-size:11px; letter-spacing:2.5px;
+  text-transform:uppercase; white-space:nowrap;
+  font-family:'Raleway',sans-serif; font-weight:300;
+  animation:blinkAnim 2s 3.8s ease-in-out infinite;
+}
+#hint-go {
+  position:absolute; bottom:-46px; left:50%;
+  transform:translateX(-50%);
+  color:rgba(255,245,235,0.8);
+  font-size:13px; font-style:italic; white-space:nowrap;
+  letter-spacing:1px;
+  opacity:0; transition:opacity 0.6s;
+}
+#hint-go.show { opacity:1; animation:blinkAnim 1.8s ease-in-out infinite; }
+@keyframes blinkAnim {
+  0%,100% { opacity:0.7; } 50% { opacity:0.15; }
+}
+
+/* ════════════════════════════════
+   SHIMMER on envelope
+════════════════════════════════ */
+#env-wrap::after {
+  content:'';
+  position:absolute; inset:0; z-index:15;
+  background:linear-gradient(120deg,
+    transparent 35%, rgba(255,255,255,0.07) 50%, transparent 65%);
+  pointer-events:none;
+  animation:shimmer 5s 4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%,100% { opacity:0; } 45%,55% { opacity:1; }
+}
+
+/* ════════════════════════════════
+   SCREEN FLASH on seal break
+════════════════════════════════ */
+#flash {
+  position:fixed; inset:0; z-index:999;
+  background:rgba(255,240,230,0.85);
+  opacity:0; pointer-events:none;
+  transition:opacity 0.05s;
+}
+#flash.show { opacity:1; }
+</style>
+</head>
+<body>
+
+<div id="scene">
+<div id="flash"></div>
+
+<!-- ════ BACKGROUND ════ -->
+<div id="bg">
+  <div id="bg-sky"></div>
+
+  <!-- Illustrated ballroom scene in SVG -->
+  <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Warm watercolor background wash -->
+      <radialGradient id="skyGrad" cx="50%" cy="25%" r="70%">
+        <stop offset="0%"   stop-color="#f8e8d0" stop-opacity="1"/>
+        <stop offset="40%"  stop-color="#e0c4a8" stop-opacity="1"/>
+        <stop offset="75%"  stop-color="#c09080" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#5a2a4a" stop-opacity="1"/>
+      </radialGradient>
+      <radialGradient id="floorGrad" cx="50%" cy="100%" r="60%">
+        <stop offset="0%"  stop-color="#d4b090" stop-opacity="0.8"/>
+        <stop offset="100%" stop-color="#7a3a5a" stop-opacity="0"/>
+      </radialGradient>
+      <!-- Soft watercolor blobs -->
+      <filter id="watercolor" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="4" seed="2" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="6" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="softBlur">
+        <feGaussianBlur stdDeviation="2.5"/>
+      </filter>
+    </defs>
+
+    <!-- Sky wash -->
+    <rect width="800" height="600" fill="url(#skyGrad)"/>
+
+    <!-- Watercolor texture blobs (background atmosphere) -->
+    <ellipse cx="200" cy="150" rx="180" ry="120" fill="#f0d8c0" opacity="0.18" filter="url(#watercolor)"/>
+    <ellipse cx="600" cy="180" rx="160" ry="110" fill="#e8c8b0" opacity="0.15" filter="url(#watercolor)"/>
+    <ellipse cx="400" cy="100" rx="200" ry="80"  fill="#f8e8d8" opacity="0.22" filter="url(#watercolor)"/>
+
+    <!-- HALL ARCHITECTURE — arched columns -->
+    <!-- Left arch -->
+    <path d="M0,600 L0,200 Q80,80 160,200 L160,600Z" fill="#c8a080" opacity="0.25" filter="url(#watercolor)"/>
+    <path d="M0,600 L0,220 Q70,100 140,220 L140,600Z" fill="#b89070" opacity="0.2"/>
+    <!-- Right arch -->
+    <path d="M800,600 L800,200 Q720,80 640,200 L640,600Z" fill="#c8a080" opacity="0.25" filter="url(#watercolor)"/>
+    <path d="M800,600 L800,220 Q730,100 660,220 L660,600Z" fill="#b89070" opacity="0.2"/>
+    <!-- Back center arch -->
+    <path d="M300,600 L300,180 Q400,50 500,180 L500,600Z" fill="#d4b090" opacity="0.12" filter="url(#softBlur)"/>
+
+    <!-- CHANDELIER -->
+    <g transform="translate(400,0)" filter="url(#glow)" opacity="0.9">
+      <!-- Chain -->
+      <line x1="0" y1="0" x2="0" y2="55" stroke="#c8a840" stroke-width="2.5"/>
+      <!-- Body -->
+      <ellipse cx="0" cy="62" rx="28" ry="10" fill="#c8a840" opacity="0.85"/>
+      <rect x="-14" y="62" width="28" height="14" rx="3" fill="#b89830"/>
+      <!-- Arms tier 1 -->
+      <line x1="0" y1="76" x2="-70" y2="105" stroke="#c8a840" stroke-width="1.8" opacity="0.8"/>
+      <line x1="0" y1="76" x2="70"  y2="105" stroke="#c8a840" stroke-width="1.8" opacity="0.8"/>
+      <line x1="0" y1="76" x2="-45" y2="108" stroke="#c8a840" stroke-width="1.5" opacity="0.7"/>
+      <line x1="0" y1="76" x2="45"  y2="108" stroke="#c8a840" stroke-width="1.5" opacity="0.7"/>
+      <line x1="0" y1="76" x2="-22" y2="112" stroke="#c8a840" stroke-width="1.5" opacity="0.7"/>
+      <line x1="0" y1="76" x2="22"  y2="112" stroke="#c8a840" stroke-width="1.5" opacity="0.7"/>
+      <line x1="0" y1="76" x2="0"   y2="118" stroke="#c8a840" stroke-width="2"   opacity="0.85"/>
+      <!-- Candle glows -->
+      <circle cx="-70" cy="107" r="7" fill="#fff8c0" opacity="0.95"/>
+      <circle cx="-70" cy="107" r="14" fill="#fff0a0" opacity="0.2"/>
+      <circle cx="70"  cy="107" r="7" fill="#fff8c0" opacity="0.95"/>
+      <circle cx="70"  cy="107" r="14" fill="#fff0a0" opacity="0.2"/>
+      <circle cx="-45" cy="110" r="6" fill="#fff8c0" opacity="0.9"/>
+      <circle cx="45"  cy="110" r="6" fill="#fff8c0" opacity="0.9"/>
+      <circle cx="-22" cy="114" r="5" fill="#fff8c0" opacity="0.85"/>
+      <circle cx="22"  cy="114" r="5" fill="#fff8c0" opacity="0.85"/>
+      <circle cx="0"   cy="120" r="8" fill="#fff8c0" opacity="1"/>
+      <circle cx="0"   cy="120" r="18" fill="#fff0a0" opacity="0.18"/>
+      <!-- Crystal drops -->
+      <ellipse cx="-70" cy="118" rx="2.5" ry="6" fill="#d0eaf8" opacity="0.8"/>
+      <ellipse cx="70"  cy="118" rx="2.5" ry="6" fill="#d0eaf8" opacity="0.8"/>
+      <ellipse cx="0"   cy="132" rx="3"   ry="8" fill="#d0eaf8" opacity="0.8"/>
+      <ellipse cx="-45" cy="120" rx="2" ry="5"   fill="#d0eaf8" opacity="0.7"/>
+      <ellipse cx="45"  cy="120" rx="2" ry="5"   fill="#d0eaf8" opacity="0.7"/>
+    </g>
+
+    <!-- FLOOR -->
+    <ellipse cx="400" cy="600" rx="400" ry="60" fill="url(#floorGrad)"/>
+    <!-- Floor reflection line -->
+    <line x1="50" y1="540" x2="750" y2="540" stroke="#c8a870" stroke-width="0.8" opacity="0.25"/>
+
+    <!-- SILHOUETTES — elegant guests with masquerade masks -->
+    <!-- Far left figure -->
+    <g opacity="0.45" filter="url(#watercolor)">
+      <ellipse cx="95" cy="470" rx="28" ry="80" fill="#2a1030"/>
+      <circle  cx="95" cy="372" r="22" fill="#2a1030"/>
+      <!-- Mask -->
+      <path d="M80,368 Q95,360 110,368 Q107,377 95,378 Q83,377 80,368Z" fill="#f0e8e0" opacity="0.6"/>
+      <!-- Feathers -->
+      <path d="M110,365 Q130,345 138,352 Q128,360 110,368Z" fill="#9b6090" opacity="0.5"/>
+    </g>
+
+    <!-- Center couple — slightly larger, more prominent -->
+    <!-- Woman -->
+    <g opacity="0.65">
+      <!-- Dress -->
+      <path d="M330,600 Q320,520 318,470 Q328,440 348,430 Q355,450 350,480 Q348,530 345,600Z"
+            fill="#1a0828" opacity="0.9"/>
+      <path d="M345,600 Q350,520 352,470 Q360,445 365,460 Q362,500 358,560 Q356,580 352,600Z"
+            fill="#2a1040" opacity="0.7"/>
+      <!-- Body -->
+      <ellipse cx="348" cy="440" rx="20" ry="36" fill="#1a0828" opacity="0.85"/>
+      <!-- Head -->
+      <circle  cx="348" cy="396" r="20" fill="#1a0828" opacity="0.9"/>
+      <!-- Hair suggestion -->
+      <path d="M330,390 Q348,375 366,390 Q362,382 348,378 Q334,382 330,390Z" fill="#0a0415" opacity="0.8"/>
+      <!-- White mask -->
+      <path d="M336,393 Q348,385 360,393 Q357,402 348,403 Q339,402 336,393Z" fill="#f5f0e8" opacity="0.75"/>
+    </g>
+
+    <!-- Man -->
+    <g opacity="0.7">
+      <ellipse cx="390" cy="468" rx="22" ry="78" fill="#0e0618" opacity="0.95"/>
+      <circle  cx="390" cy="382" r="21" fill="#0e0618" opacity="0.95"/>
+      <!-- Dark mask -->
+      <path d="M378,379 Q390,372 402,379 Q399,388 390,389 Q381,388 378,379Z" fill="#1e0e30" opacity="0.9"/>
+      <!-- Cravat accent -->
+      <rect x="386" y="402" width="8" height="22" rx="3" fill="#9b6090" opacity="0.35"/>
+    </g>
+
+    <!-- Right background figure -->
+    <g opacity="0.38" filter="url(#watercolor)">
+      <ellipse cx="680" cy="468" rx="25" ry="76" fill="#1a0828"/>
+      <circle  cx="680" cy="376" r="19" fill="#1a0828"/>
+      <path d="M669,373 Q680,366 691,373 Q689,381 680,382 Q671,381 669,373Z" fill="#f0e0d8" opacity="0.55"/>
+      <!-- Feathers right side -->
+      <path d="M669,370 Q650,350 643,357 Q653,364 669,372Z" fill="#9b6090" opacity="0.45"/>
+    </g>
+
+    <!-- Far right figure -->
+    <g opacity="0.3">
+      <ellipse cx="750" cy="478" rx="20" ry="70" fill="#1a0828"/>
+      <circle  cx="750" cy="392" r="17" fill="#1a0828"/>
+    </g>
+
+    <!-- ATMOSPHERE — soft light beams from chandelier -->
+    <line x1="400" y1="130" x2="150" y2="540" stroke="#f8e8c0" stroke-width="40" opacity="0.04"/>
+    <line x1="400" y1="130" x2="650" y2="540" stroke="#f8e8c0" stroke-width="40" opacity="0.04"/>
+    <line x1="400" y1="130" x2="400" y2="600" stroke="#f8e8c0" stroke-width="50" opacity="0.05"/>
+
+    <!-- Particle dust motes -->
+    <circle cx="250" cy="200" r="2" fill="#f8e8c0" opacity="0.4"/>
+    <circle cx="550" cy="240" r="1.5" fill="#f8e8c0" opacity="0.3"/>
+    <circle cx="180" cy="320" r="1.5" fill="#f8e8c0" opacity="0.35"/>
+    <circle cx="620" cy="280" r="2" fill="#f8e8c0" opacity="0.3"/>
+    <circle cx="350" cy="180" r="1" fill="#fff8e0" opacity="0.5"/>
+    <circle cx="460" cy="170" r="1" fill="#fff8e0" opacity="0.45"/>
+  </svg>
+</div>
+
+<!-- ════ WISTERIA CORNERS ════ -->
+<!-- Left -->
+<svg class="wisteria left" viewBox="0 0 170 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M80,0 Q70,90 55,180 Q42,260 60,320" stroke="#5a3a7a" stroke-width="2.2" fill="none" opacity=".55"/>
+  <path d="M100,10 Q92,95 80,185 Q68,265 82,320" stroke="#5a3a7a" stroke-width="1.6" fill="none" opacity=".45"/>
+  <ellipse cx="68" cy="55"  rx="15" ry="6" fill="#7a5a9a" opacity=".5"  transform="rotate(-35 68 55)"/>
+  <ellipse cx="88" cy="85"  rx="13" ry="5" fill="#9a7ab8" opacity=".45" transform="rotate(22 88 85)"/>
+  <ellipse cx="56" cy="125" rx="14" ry="5" fill="#7a5a9a" opacity=".45" transform="rotate(-18 56 125)"/>
+  <ellipse cx="92" cy="140" rx="12" ry="5" fill="#9a7ab8" opacity=".4"  transform="rotate(10 92 140)"/>
+  <!-- Cluster A -->
+  <circle cx="55" cy="168" r="9"  fill="#a070c8" opacity=".68"/>
+  <circle cx="65" cy="179" r="8"  fill="#b888d4" opacity=".62"/>
+  <circle cx="46" cy="181" r="8"  fill="#8850b8" opacity=".62"/>
+  <circle cx="56" cy="192" r="7"  fill="#a070c8" opacity=".58"/>
+  <circle cx="66" cy="195" r="6"  fill="#c8a8e0" opacity=".52"/>
+  <circle cx="46" cy="195" r="6"  fill="#8850b8" opacity=".52"/>
+  <circle cx="56" cy="205" r="5"  fill="#a870c8" opacity=".46"/>
+  <circle cx="50" cy="214" r="4"  fill="#a070c8" opacity=".38"/>
+  <!-- Cluster B -->
+  <circle cx="88" cy="205" r="10" fill="#b888d4" opacity=".62"/>
+  <circle cx="98" cy="217" r="9"  fill="#a070c8" opacity=".58"/>
+  <circle cx="78" cy="219" r="8"  fill="#8850b8" opacity=".58"/>
+  <circle cx="88" cy="230" r="8"  fill="#c8a8e0" opacity=".52"/>
+  <circle cx="98" cy="234" r="6"  fill="#a070c8" opacity=".46"/>
+  <circle cx="78" cy="234" r="6"  fill="#a870c8" opacity=".46"/>
+  <circle cx="88" cy="244" r="5"  fill="#8850b8" opacity=".4"/>
+  <!-- Cluster C -->
+  <circle cx="48" cy="262" r="11" fill="#a070c8" opacity=".68"/>
+  <circle cx="62" cy="274" r="10" fill="#b888d4" opacity=".62"/>
+  <circle cx="36" cy="276" r="9"  fill="#8850b8" opacity=".6"/>
+  <circle cx="50" cy="288" r="9"  fill="#a070c8" opacity=".58"/>
+  <circle cx="64" cy="291" r="7"  fill="#c8a8e0" opacity=".52"/>
+  <circle cx="36" cy="291" r="7"  fill="#8850b8" opacity=".52"/>
+  <circle cx="50" cy="302" r="6"  fill="#a870c8" opacity=".44"/>
+  <circle cx="43" cy="312" r="5"  fill="#a070c8" opacity=".36"/>
+  <circle cx="56" cy="315" r="4"  fill="#b888d4" opacity=".3"/>
+</svg>
+
+<!-- Right (mirror) -->
+<svg class="wisteria right" viewBox="0 0 170 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M80,0 Q70,90 55,180 Q42,260 60,320" stroke="#5a3a7a" stroke-width="2.2" fill="none" opacity=".55"/>
+  <path d="M100,10 Q92,95 80,185 Q68,265 82,320" stroke="#5a3a7a" stroke-width="1.6" fill="none" opacity=".45"/>
+  <ellipse cx="68" cy="55"  rx="15" ry="6" fill="#7a5a9a" opacity=".5"  transform="rotate(-35 68 55)"/>
+  <ellipse cx="88" cy="85"  rx="13" ry="5" fill="#9a7ab8" opacity=".45" transform="rotate(22 88 85)"/>
+  <ellipse cx="56" cy="125" rx="14" ry="5" fill="#7a5a9a" opacity=".45" transform="rotate(-18 56 125)"/>
+  <circle cx="55" cy="168" r="9"  fill="#a070c8" opacity=".68"/>
+  <circle cx="65" cy="179" r="8"  fill="#b888d4" opacity=".62"/>
+  <circle cx="46" cy="181" r="8"  fill="#8850b8" opacity=".62"/>
+  <circle cx="56" cy="192" r="7"  fill="#a070c8" opacity=".58"/>
+  <circle cx="66" cy="195" r="6"  fill="#c8a8e0" opacity=".52"/>
+  <circle cx="46" cy="195" r="6"  fill="#8850b8" opacity=".52"/>
+  <circle cx="88" cy="205" r="10" fill="#b888d4" opacity=".62"/>
+  <circle cx="98" cy="217" r="9"  fill="#a070c8" opacity=".58"/>
+  <circle cx="78" cy="219" r="8"  fill="#8850b8" opacity=".58"/>
+  <circle cx="88" cy="230" r="8"  fill="#c8a8e0" opacity=".52"/>
+  <circle cx="48" cy="262" r="11" fill="#a070c8" opacity=".68"/>
+  <circle cx="62" cy="274" r="10" fill="#b888d4" opacity=".62"/>
+  <circle cx="36" cy="276" r="9"  fill="#8850b8" opacity=".6"/>
+  <circle cx="50" cy="288" r="9"  fill="#a070c8" opacity=".58"/>
+  <circle cx="64" cy="291" r="7"  fill="#c8a8e0" opacity=".52"/>
+  <circle cx="36" cy="291" r="7"  fill="#8850b8" opacity=".52"/>
+  <circle cx="50" cy="302" r="6"  fill="#a870c8" opacity=".44"/>
+</svg>
+
+<!-- ════ ENVELOPE WRAP ════ -->
+<div id="env-wrap" class="floating">
+
+  <!-- LETTER (rises from inside) -->
+  <div id="letter">
+    <svg viewBox="0 0 220 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 6px 20px rgba(0,0,0,0.4))">
+      <defs>
+        <linearGradient id="paperGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#fdf8f0"/>
+          <stop offset="100%" stop-color="#f0e4d0"/>
+        </linearGradient>
+        <!-- Paper texture -->
+        <filter id="paperTex">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" result="noise"/>
+          <feColorMatrix type="saturate" values="0" result="grey"/>
+          <feBlend in="SourceGraphic" in2="grey" mode="multiply" result="blend"/>
+          <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+        </filter>
+      </defs>
+      <!-- Paper body -->
+      <rect x="4" y="4" width="212" height="192" rx="3" fill="url(#paperGrad)" filter="url(#paperTex)"/>
+      <!-- Top folded edge -->
+      <path d="M4,4 L110,4 L216,4" stroke="#e0d0b8" stroke-width="1" fill="none"/>
+      <!-- Subtle ruled lines -->
+      <line x1="24" y1="75"  x2="196" y2="75"  stroke="#e8d8c0" stroke-width="0.6" opacity=".7"/>
+      <line x1="24" y1="95"  x2="196" y2="95"  stroke="#e8d8c0" stroke-width="0.6" opacity=".7"/>
+      <line x1="24" y1="115" x2="196" y2="115" stroke="#e8d8c0" stroke-width="0.6" opacity=".7"/>
+      <line x1="24" y1="135" x2="196" y2="135" stroke="#e8d8c0" stroke-width="0.6" opacity=".7"/>
+      <line x1="24" y1="155" x2="196" y2="155" stroke="#e8d8c0" stroke-width="0.6" opacity=".7"/>
+      <!-- Inner border -->
+      <rect x="12" y="12" width="196" height="176" rx="2" fill="none" stroke="#d8c8b0" stroke-width="0.8"/>
+      <!-- Corner ornaments -->
+      <path d="M18,18 L30,18 M18,18 L18,30" stroke="#b89878" stroke-width="1.2" fill="none"/>
+      <path d="M202,18 L190,18 M202,18 L202,30" stroke="#b89878" stroke-width="1.2" fill="none"/>
+      <path d="M18,188 L30,188 M18,188 L18,176" stroke="#b89878" stroke-width="1.2" fill="none"/>
+      <path d="M202,188 L190,188 M202,188 L202,176" stroke="#b89878" stroke-width="1.2" fill="none"/>
+      <!-- Decorative top ornament -->
+      <g id="letter-ornament" opacity="0">
+        <line x1="80" y1="32" x2="140" y2="32" stroke="#c8a878" stroke-width="0.8" opacity=".7"/>
+        <circle cx="110" cy="32" r="2.5" fill="#c8a878" opacity=".7"/>
+        <circle cx="90"  cy="32" r="1.5" fill="#c8a878" opacity=".5"/>
+        <circle cx="130" cy="32" r="1.5" fill="#c8a878" opacity=".5"/>
+        <text x="110" y="28" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="9" fill="#b89878" opacity=".8" font-style="italic">con amor</text>
+      </g>
+      <!-- Names text -->
+      <text id="letter-name-svg" x="110" y="100"
+            text-anchor="middle"
+            font-family="Pinyon Script,cursive"
+            font-size="44" fill="#3a2030" opacity="0">Dole &amp; Cris</text>
+      <!-- Divider -->
+      <g id="letter-divider" opacity="0">
+        <line x1="44" y1="118" x2="176" y2="118" stroke="#c8a878" stroke-width="0.8" opacity=".6"/>
+        <circle cx="110" cy="118" r="2.5" fill="#c8a878" opacity=".7"/>
+        <circle cx="55"  cy="118" r="1.5" fill="#c8a878" opacity=".4"/>
+        <circle cx="165" cy="118" r="1.5" fill="#c8a878" opacity=".4"/>
+      </g>
+      <!-- Sub text -->
+      <text id="letter-sub1" x="110" y="148"
+            text-anchor="middle"
+            font-family="Cormorant Garamond,serif"
+            font-size="13" font-style="italic" fill="#7a5860" opacity="0">Invitación especial</text>
+      <text id="letter-sub2" x="110" y="166"
+            text-anchor="middle"
+            font-family="Cormorant Garamond,serif"
+            font-size="13" font-style="italic" fill="#7a5860" opacity="0">para usted</text>
+      <!-- Bottom flourish -->
+      <path id="letter-flourish" d="M80,182 Q110,176 140,182" stroke="#c8a878" stroke-width="1" fill="none" opacity="0"/>
+    </svg>
+  </div>
+
+  <!-- ENVELOPE SVG — all states drawn, toggled by JS -->
+  <div id="env-svg">
+
+    <!-- STATE 1: Closed envelope with intact seal -->
+    <svg id="layer-closed" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+      <defs>
+        <linearGradient id="envBody" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#f5e8d0"/>
+          <stop offset="100%" stop-color="#e8d4b8"/>
+        </linearGradient>
+        <linearGradient id="envFlap" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#ecdcc8"/>
+          <stop offset="100%" stop-color="#dccab2"/>
+        </linearGradient>
+        <linearGradient id="envShad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#d8c8a8" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#c8b898" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="envShadow" x="-10%" y="-10%" width="120%" height="130%">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0a0415" flood-opacity="0.5"/>
+        </filter>
+        <!-- Wax seal gradient -->
+        <radialGradient id="sealG" cx="38%" cy="32%" r="70%">
+          <stop offset="0%"   stop-color="#cc4444"/>
+          <stop offset="50%"  stop-color="#aa2828"/>
+          <stop offset="100%" stop-color="#701818"/>
+        </radialGradient>
+        <radialGradient id="sealShine" cx="35%" cy="30%" r="50%">
+          <stop offset="0%"  stop-color="rgba(255,255,255,0.22)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+        </radialGradient>
+      </defs>
+      <g filter="url(#envShadow)">
+        <!-- Envelope body -->
+        <rect x="10" y="50" width="280" height="162" rx="5" fill="url(#envBody)"/>
+        <!-- Subtle paper texture lines -->
+        <line x1="10" y1="70"  x2="290" y2="70"  stroke="#d8c8a8" stroke-width="0.5" opacity=".4"/>
+        <line x1="10" y1="100" x2="290" y2="100" stroke="#d8c8a8" stroke-width="0.5" opacity=".3"/>
+        <line x1="10" y1="140" x2="290" y2="140" stroke="#d8c8a8" stroke-width="0.5" opacity=".3"/>
+        <line x1="10" y1="180" x2="290" y2="180" stroke="#d8c8a8" stroke-width="0.5" opacity=".3"/>
+        <!-- Bottom fold triangle -->
+        <path d="M10,212 L150,138 L290,212Z" fill="#d8c4a4" opacity=".55"/>
+        <!-- Left fold -->
+        <path d="M10,50  L10,212 L150,138Z"  fill="#e0d0b0" opacity=".4"/>
+        <!-- Right fold -->
+        <path d="M290,50 L290,212 L150,138Z" fill="#d8c8a8" opacity=".35"/>
+        <!-- Closed flap (triangle pointing down from top) -->
+        <path d="M10,50 L150,130 L290,50Z" fill="url(#envFlap)"/>
+        <path d="M10,50 L150,130 L290,50Z" fill="none" stroke="#d0c0a0" stroke-width="0.8"/>
+        <!-- Envelope border -->
+        <rect x="10" y="50" width="280" height="162" rx="5" fill="none" stroke="#d0c0a0" stroke-width="1.2"/>
+
+        <!-- WAX SEAL — center of flap meeting body -->
+        <g transform="translate(150,132)">
+          <!-- Outer glow -->
+          <circle r="30" fill="#8a2020" opacity=".18"/>
+          <!-- Main seal body -->
+          <circle r="25" fill="url(#sealG)"/>
+          <!-- Shine overlay -->
+          <circle r="25" fill="url(#sealShine)"/>
+          <!-- Embossed ring -->
+          <circle r="22" fill="none" stroke="#cc3333" stroke-width="1.8" opacity=".45"/>
+          <circle r="18" fill="none" stroke="#cc3333" stroke-width="0.8" opacity=".3"/>
+          <!-- Drip left -->
+          <path d="M-24,0 Q-34,-8 -30,6 Q-28,14 -22,10Z" fill="#aa2828" opacity=".6"/>
+          <!-- Drip right -->
+          <path d="M24,2 Q34,-6 30,8 Q27,16 21,12Z" fill="#aa2828" opacity=".5"/>
+          <!-- D&C monogram -->
+          <text y="-2" text-anchor="middle"
+                font-family="Cormorant Garamond,serif"
+                font-size="12" font-style="italic" font-weight="600"
+                fill="rgba(255,245,235,0.92)" letter-spacing="1">D&amp;C</text>
+          <line x1="-12" y1="4" x2="12" y2="4" stroke="rgba(255,245,235,0.38)" stroke-width="0.7"/>
+          <text y="12" text-anchor="middle" font-size="8" fill="rgba(255,245,235,0.65)">♥</text>
+          <!-- Shine spot -->
+          <circle cx="-7" cy="-10" r="5" fill="white" opacity=".12"/>
+        </g>
+      </g>
+    </svg>
+
+    <!-- STATE 2: Cracking seal -->
+    <svg id="layer-cracking" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;position:absolute;inset:0">
+      <defs>
+        <radialGradient id="sealG2" cx="38%" cy="32%" r="70%">
+          <stop offset="0%"   stop-color="#cc4444"/>
+          <stop offset="50%"  stop-color="#aa2828"/>
+          <stop offset="100%" stop-color="#701818"/>
+        </radialGradient>
+      </defs>
+      <!-- Same envelope body (copy) -->
+      <rect x="10" y="50" width="280" height="162" rx="5" fill="#f0e4cc"/>
+      <path d="M10,212 L150,138 L290,212Z" fill="#d8c4a4" opacity=".55"/>
+      <path d="M10,50  L10,212 L150,138Z"  fill="#e0d0b0" opacity=".4"/>
+      <path d="M290,50 L290,212 L150,138Z" fill="#d8c8a8" opacity=".35"/>
+      <path d="M10,50 L150,130 L290,50Z" fill="#e8d8be"/>
+      <rect x="10" y="50" width="280" height="162" rx="5" fill="none" stroke="#d0c0a0" stroke-width="1.2"/>
+      <!-- Seal — cracked version -->
+      <g transform="translate(150,132)">
+        <circle r="25" fill="url(#sealG2)"/>
+        <circle r="22" fill="none" stroke="#cc3333" stroke-width="1.8" opacity=".4"/>
+        <!-- Crack lines radiating out -->
+        <line x1="0"   y1="0" x2="18"  y2="-20" stroke="#5a1010" stroke-width="1.5" opacity=".8"/>
+        <line x1="0"   y1="0" x2="-22" y2="-15" stroke="#5a1010" stroke-width="1.2" opacity=".7"/>
+        <line x1="0"   y1="0" x2="20"  y2="12"  stroke="#5a1010" stroke-width="1.3" opacity=".75"/>
+        <line x1="0"   y1="0" x2="-14" y2="20"  stroke="#5a1010" stroke-width="1.1" opacity=".65"/>
+        <line x1="0"   y1="0" x2="5"   y2="24"  stroke="#5a1010" stroke-width="1"   opacity=".6"/>
+        <line x1="0"   y1="0" x2="-5"  y2="-24" stroke="#5a1010" stroke-width="0.9" opacity=".55"/>
+        <!-- Central break -->
+        <path d="M-6,-8 L2,0 L-4,8 L6,4 L0,-4 L8,-10Z" fill="#4a0808" opacity=".55"/>
+        <!-- Lighter crack highlights -->
+        <line x1="2"  y1="-2" x2="16" y2="-18" stroke="#ff8888" stroke-width="0.5" opacity=".4"/>
+        <line x1="-2" y1="2"  x2="-20" y2="-12" stroke="#ff8888" stroke-width="0.5" opacity=".3"/>
+        <!-- D&C still visible but distressed -->
+        <text y="-2" text-anchor="middle"
+              font-family="Cormorant Garamond,serif"
+              font-size="12" font-style="italic" font-weight="600"
+              fill="rgba(255,245,235,0.7)" letter-spacing="1">D&amp;C</text>
+        <circle cx="-7" cy="-10" r="5" fill="white" opacity=".08"/>
+      </g>
+    </svg>
+
+    <!-- STATE 3: Flap partially open, seal broken / falling away -->
+    <svg id="layer-opening" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;position:absolute;inset:0">
+      <defs>
+        <linearGradient id="flapOpen" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%"   stop-color="#dccab2"/>
+          <stop offset="100%" stop-color="#ecdcc8"/>
+        </linearGradient>
+        <radialGradient id="sealFall" cx="38%" cy="32%" r="70%">
+          <stop offset="0%"   stop-color="#bb3333"/>
+          <stop offset="100%" stop-color="#601010"/>
+        </radialGradient>
+      </defs>
+      <!-- Envelope body -->
+      <rect x="10" y="50" width="280" height="162" rx="5" fill="#f0e4cc"/>
+      <path d="M10,212 L150,138 L290,212Z" fill="#d8c4a4" opacity=".55"/>
+      <path d="M10,50  L10,212 L150,138Z"  fill="#e0d0b0" opacity=".4"/>
+      <path d="M290,50 L290,212 L150,138Z" fill="#d8c8a8" opacity=".35"/>
+      <rect x="10" y="50" width="280" height="162" rx="5" fill="none" stroke="#d0c0a0" stroke-width="1.2"/>
+      <!-- Flap rotating open — foreshortened (50% open) -->
+      <path d="M10,50 L150,92 L290,50Z" fill="url(#flapOpen)" opacity=".95"/>
+      <path d="M10,50 L150,92 L290,50Z" fill="none" stroke="#c8b898" stroke-width="0.8"/>
+      <!-- Shadow inside opening -->
+      <path d="M10,50 L150,92 L290,50 L290,55 L150,98 L10,55Z" fill="#c0a880" opacity=".2"/>
+      <!-- Dark interior of envelope -->
+      <path d="M40,52 Q150,90 260,52 L265,60 Q150,96 35,60Z" fill="#8a7050" opacity=".12"/>
+      <!-- Seal falling / off-center, tilted, cracked -->
+      <g transform="translate(175,158) rotate(28)">
+        <circle r="22" fill="url(#sealFall)"/>
+        <circle r="19" fill="none" stroke="#cc3333" stroke-width="1.4" opacity=".35"/>
+        <!-- All cracks -->
+        <line x1="-8" y1="-8" x2="18"  y2="-22" stroke="#3a0808" stroke-width="1.4" opacity=".8"/>
+        <line x1="4"  y1="-4" x2="-24" y2="-16" stroke="#3a0808" stroke-width="1.2" opacity=".7"/>
+        <line x1="2"  y1="4"  x2="22"  y2="14"  stroke="#3a0808" stroke-width="1.2" opacity=".7"/>
+        <line x1="-4" y1="6"  x2="-16" y2="22"  stroke="#3a0808" stroke-width="1"   opacity=".65"/>
+        <path d="M-4,-6 L2,2 L-2,8 L4,6 L0,-2 L6,-8Z" fill="#2a0404" opacity=".6"/>
+        <text y="-1" text-anchor="middle" font-family="Cormorant Garamond,serif"
+              font-size="11" font-style="italic" font-weight="600"
+              fill="rgba(255,245,235,0.55)" letter-spacing="1">D&amp;C</text>
+      </g>
+      <!-- Scattered wax fragments -->
+      <circle cx="130" cy="148" r="4" fill="#aa2828" opacity=".55" transform="rotate(-15,130,148)"/>
+      <circle cx="118" cy="162" r="3" fill="#881818" opacity=".5"/>
+      <circle cx="142" cy="170" r="5" fill="#aa2828" opacity=".45" transform="rotate(20,142,170)"/>
+      <rect x="106" y="154" width="8" height="6" rx="1" fill="#992020" opacity=".5" transform="rotate(-30,110,157)"/>
+    </svg>
+
+    <!-- STATE 4: Fully open, letter visible inside -->
+    <svg id="layer-open" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;position:absolute;inset:0">
+      <defs>
+        <linearGradient id="flapFull" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%"   stop-color="#dccab2"/>
+          <stop offset="100%" stop-color="#ecdcc8"/>
+        </linearGradient>
+      </defs>
+      <!-- Envelope body -->
+      <rect x="10" y="50" width="280" height="162" rx="5" fill="#f0e4cc"/>
+      <path d="M10,212 L150,138 L290,212Z" fill="#d8c4a4" opacity=".55"/>
+      <path d="M10,50 L10,212 L150,138Z"   fill="#e0d0b0" opacity=".4"/>
+      <path d="M290,50 L290,212 L150,138Z" fill="#d8c8a8" opacity=".35"/>
+      <rect x="10" y="50" width="280" height="162" rx="5" fill="none" stroke="#d0c0a0" stroke-width="1.2"/>
+      <!-- Flap fully open (pointing down-back, foreshortened flat) -->
+      <path d="M10,50 L150,50 L290,50 L150,55Z" fill="url(#flapFull)" opacity=".7"/>
+      <!-- Dark interior of open envelope -->
+      <rect x="20" y="58" width="260" height="90" rx="3" fill="#8a7050" opacity=".08"/>
+      <!-- Flap shadow on body -->
+      <path d="M10,50 L290,50 L285,64 L15,64Z" fill="#b09070" opacity=".12"/>
+      <!-- Scattered wax pieces (more spread out) -->
+      <circle cx="85"  cy="165" r="5" fill="#992020" opacity=".45" transform="rotate(-20,85,165)"/>
+      <circle cx="70"  cy="178" r="3" fill="#881818" opacity=".4"/>
+      <circle cx="210" cy="162" r="4" fill="#aa2828" opacity=".42" transform="rotate(15,210,162)"/>
+      <circle cx="228" cy="175" r="3" fill="#881818" opacity=".38"/>
+      <rect x="100" y="172" width="10" height="7" rx="1" fill="#992020" opacity=".42" transform="rotate(-25,105,175)"/>
+      <rect x="190" y="180" width="8"  height="6" rx="1" fill="#aa2828" opacity=".38" transform="rotate(18,194,183)"/>
+    </svg>
+
+  </div><!-- /env-svg -->
+
+  <!-- Seal pulse ring -->
+  <div id="seal-ring"></div>
+
+  <!-- Particles container -->
+  <div id="particles"></div>
+
+  <!-- Hints -->
+  <div id="hint-seal">✦ &nbsp; toca el sello &nbsp; ✦</div>
+  <div id="hint-go">toca para ver tu invitación →</div>
+
+</div><!-- /env-wrap -->
+
+</div><!-- /scene -->
+
+<div id="flash"></div>
+
+<script>
+// ══════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════
+const DESTINATION = 'https://www.google.com'; // ← cambia por tu URL de invitación
+
+// ══════════════════════════════════════
+//  STATE MACHINE
+//  0 = closed  1 = cracking  2 = opening
+//  3 = open    4 = letter shown  5 = ready to navigate
+// ══════════════════════════════════════
+let state = 0;
+
+const envWrap   = document.getElementById('env-wrap');
+const letter    = document.getElementById('letter');
+const hintSeal  = document.getElementById('hint-seal');
+const hintGo    = document.getElementById('hint-go');
+const sealRing  = document.getElementById('seal-ring');
+const particles = document.getElementById('particles');
+const flash     = document.getElementById('flash');
+
+// Layer elements
+const lClosed   = document.getElementById('layer-closed');
+const lCracking = document.getElementById('layer-cracking');
+const lOpening  = document.getElementById('layer-opening');
+const lOpen     = document.getElementById('layer-open');
+
+// SVG sub-elements for letter animation
+const letterOrnament = document.getElementById('letter-ornament');
+const letterName     = document.getElementById('letter-name-svg');
+const letterDivider  = document.getElementById('letter-divider');
+const letterSub1     = document.getElementById('letter-sub1');
+const letterSub2     = document.getElementById('letter-sub2');
+const letterFlourish = document.getElementById('letter-flourish');
+
+// ── Show envelope layer ──
+function showLayer(n) {
+  const layers = [lClosed, lCracking, lOpening, lOpen];
+  layers.forEach((l, i) => {
+    l.style.opacity = i === n ? '1' : '0';
+    l.style.transition = 'opacity 0.18s ease';
+  });
+}
+
+// ── SVG attr animation helper ──
+function fadeSVGEl(el, toOpacity, delay=0, duration=600) {
+  if (!el) return;
+  el.style.transition = `opacity ${duration}ms ${delay}ms ease, transform ${duration}ms ${delay}ms ease`;
+  el.style.transform = 'translateY(0)';
+  el.style.opacity = toOpacity;
+}
+
+// ── Screen flash ──
+function doFlash() {
+  flash.style.opacity = '1';
+  setTimeout(() => { flash.style.transition='opacity 0.35s'; flash.style.opacity='0'; }, 60);
+  setTimeout(() => { flash.style.transition=''; }, 500);
+}
+
+// ── Wax particles burst ──
+function burstParticles() {
+  particles.innerHTML = '';
+  const colors = ['#aa2828','#881818','#cc4444','#d4607a','#e0a0b0','#c0d0f0','#f8e8d0'];
+  const shapes = ['circle','square','triangle'];
+
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    const size  = 5 + Math.random() * 11;
+    const angle = (i / 22) * 360 + (Math.random() - 0.5) * 28;
+    const dist  = 32 + Math.random() * 38;
+    const dx    = Math.cos(angle * Math.PI / 180) * dist;
+    const dy    = Math.sin(angle * Math.PI / 180) * dist;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const isRound = Math.random() > 0.45;
+
+    p.style.cssText = `
+      position:absolute;
+      width:${size}px; height:${size}px;
+      background:${color};
+      border-radius:${isRound ? '50%' : '2px'};
+      top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      opacity:1;
+      transition:
+        transform 0.55s cubic-bezier(0.1, 0, 0.8, 1),
+        opacity 0.45s 0.15s ease;
+      will-change:transform,opacity;
+    `;
+    particles.appendChild(p);
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      p.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))
+                           rotate(${Math.random()*360}deg) scale(${0.1 + Math.random()*0.3})`;
+      p.style.opacity = '0';
+    }));
+  }
+}
+
+// ── Shake envelope ──
+function shake() {
+  const offsets = [5,-5,4,-4,2,-2,1,0];
+  offsets.forEach((v, i) => {
+    setTimeout(() => {
+      envWrap.style.transform = `translateY(0) translateX(${v}px)`;
+      if (i === offsets.length - 1) envWrap.style.transform = '';
+    }, i * 55);
+  });
+}
+
+// ── Main open sequence ──
+function startOpen() {
+  if (state !== 0) return;
+  state = 1;
+
+  // Stop floating
+  envWrap.style.animation = 'none';
+  envWrap.style.transform = 'translateY(0)';
+
+  // Fade hint
+  hintSeal.style.transition = 'opacity 0.3s';
+  hintSeal.style.opacity = '0';
+  sealRing.style.display = 'none';
+
+  // Flash + particles
+  doFlash();
+  burstParticles();
+
+  // Step 1 → cracking (immediate)
+  setTimeout(() => {
+    showLayer(1); // cracking
+    shake();
+    state = 2;
+  }, 60);
+
+  // Step 2 → opening (flap lifts)
+  setTimeout(() => {
+    showLayer(2); // opening
+  }, 620);
+
+  // Step 3 → fully open
+  setTimeout(() => {
+    showLayer(3); // open
+    state = 3;
+  }, 1180);
+
+  // Step 4 → letter rises
+  setTimeout(() => {
+    letter.classList.add('risen');
+  }, 1500);
+
+  // Step 5 → animate letter contents sequentially
+  // Ornament
+  setTimeout(() => {
+    letterOrnament.style.transition = 'opacity 0.5s';
+    letterOrnament.style.opacity    = '1';
+  }, 2000);
+
+  // Name
+  setTimeout(() => {
+    letterName.style.transition  = 'opacity 0.8s ease, transform 0.8s ease';
+    letterName.style.transform   = 'translateY(0)';
+    letterName.style.opacity     = '1';
+  }, 2300);
+
+  // Divider
+  setTimeout(() => {
+    letterDivider.style.transition = 'opacity 0.5s';
+    letterDivider.style.opacity    = '1';
+  }, 2900);
+
+  // Sub lines
+  setTimeout(() => {
+    letterSub1.style.transition = 'opacity 0.6s ease';
+    letterSub1.style.opacity    = '1';
+  }, 3200);
+  setTimeout(() => {
+    letterSub2.style.transition = 'opacity 0.6s ease';
+    letterSub2.style.opacity    = '1';
+  }, 3600);
+
+  // Flourish
+  setTimeout(() => {
+    letterFlourish.style.transition = 'opacity 0.5s';
+    letterFlourish.style.opacity    = '1';
+  }, 4000);
+
+  // Show proceed hint
+  setTimeout(() => {
+    hintGo.classList.add('show');
+    state = 5;
+  }, 4400);
+}
+
+// ══════════════════════════════════════
+//  CLICK / TAP HANDLER
+// ══════════════════════════════════════
+envWrap.addEventListener('click', function(e) {
+  if (state === 0) {
+    // Detect tap near seal region (center-x, ~60-75% down the envelope)
+    const rect = envWrap.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width;
+    const relY = (e.clientY - rect.top)  / rect.height;
+
+    if (relX > 0.28 && relX < 0.72 && relY > 0.52 && relY < 0.76) {
+      startOpen();
+    } else {
+      // Pulse to draw attention to seal
+      sealRing.style.animation = 'none';
+      void sealRing.offsetWidth; // reflow
+      sealRing.style.animation = 'sealPulse 0.5s ease-out';
+      envWrap.style.transform = 'translateY(-6px) scale(1.02)';
+      setTimeout(() => envWrap.style.transform = '', 250);
+    }
+  } else if (state === 5) {
+    window.location.href = DESTINATION;
+  }
+});
+
+// Touch support
+envWrap.addEventListener('touchend', function(e) {
+  e.preventDefault();
+}, { passive: false });
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    if (state === 0) startOpen();
+    else if (state === 5) window.location.href = DESTINATION;
+  }
+});
+</script>
+</body>
+</html>

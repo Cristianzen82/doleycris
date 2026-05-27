@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · D&C Matrimonio</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0f0c18;
+  --surface:   #1a1628;
+  --surface2:  #231e35;
+  --surface3:  #2e2845;
+  --border:    rgba(255,255,255,0.08);
+  --border2:   rgba(255,255,255,0.14);
+  --blush:     #d4a5a5;
+  --blush2:    #e8c9c9;
+  --sage:      #8aab8a;
+  --sage2:     #b0c9b0;
+  --dusty:     #8fa8bc;
+  --dusty2:    #b8ccd8;
+  --gold:      #c9943a;
+  --gold2:     #e8b85a;
+  --white:     #f5f0fa;
+  --muted:     rgba(245,240,250,0.45);
+  --danger:    #e07070;
+  --success:   #70b870;
+
+  --tier0: #666;
+  --tier1: #8aab8a;
+  --tier2: #8fa8bc;
+  --tier3: #c9943a;
+  --tier4: #d4a5a5;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── NOISE TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── LOGIN SCREEN ── */
+#login-screen {
+  position: fixed; inset: 0;
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  padding: 24px;
+}
+
+#login-screen.hidden { display: none; }
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 48px 36px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+}
+
+.login-card::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(to right, var(--blush), var(--dusty), var(--sage));
+  border-radius: 20px 20px 0 0;
+}
+
+.login-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  font-style: italic;
+  color: var(--blush2);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.login-subtitle {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 36px;
+}
+
+.login-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: left;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.login-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 16px;
+}
+.login-input:focus { border-color: var(--blush); }
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--blush), var(--dusty));
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.login-error {
+  background: rgba(224,112,112,0.12);
+  border: 1px solid rgba(224,112,112,0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 12px;
+  display: none;
+}
+.login-error.show { display: block; }
+
+/* ── MAIN LAYOUT ── */
+#app { display: none; min-height: 100vh; position: relative; z-index: 1; }
+#app.show { display: flex; flex-direction: column; }
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.header-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-style: italic;
+  color: var(--blush2);
+}
+
+.header-title {
+  flex: 1;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.header-logout {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.header-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 20px 24px;
+  background: var(--bg);
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute; bottom:0; left:0; right:0; height:2px;
+}
+
+.stat-card.s-total::after  { background: var(--dusty); }
+.stat-card.s-confirm::after{ background: var(--sage); }
+.stat-card.s-points::after { background: var(--gold); }
+.stat-card.s-top::after    { background: var(--blush); }
+
+.stat-num {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-card.s-total  .stat-num { color: var(--dusty2); }
+.stat-card.s-confirm .stat-num{ color: var(--sage2); }
+.stat-card.s-points .stat-num { color: var(--gold2); }
+.stat-card.s-top    .stat-num { color: var(--blush2); font-size: 20px; }
+
+.stat-label {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── MAIN CONTENT ── */
+.main { padding: 0 24px 40px; flex: 1; }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.toolbar-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--white);
+  flex: 1;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-input {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 9px 14px 9px 36px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--white);
+  outline: none;
+  width: 220px;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--dusty); }
+.search-input::placeholder { color: var(--muted); }
+
+.search-icon {
+  position: absolute; left: 11px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--blush), var(--dusty));
+  color: white;
+  box-shadow: 0 4px 16px rgba(212,165,165,0.25);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,165,165,0.35); }
+
+.btn-secondary {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--white);
+}
+.btn-secondary:hover { border-color: var(--dusty); }
+
+.btn-danger {
+  background: rgba(224,112,112,0.1);
+  border: 1px solid rgba(224,112,112,0.2);
+  color: var(--danger);
+}
+.btn-danger:hover { background: rgba(224,112,112,0.2); }
+
+.btn-success {
+  background: rgba(112,184,112,0.12);
+  border: 1px solid rgba(112,184,112,0.25);
+  color: var(--success);
+}
+.btn-success:hover { background: rgba(112,184,112,0.22); }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ── GUEST TABLE ── */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+
+tbody td {
+  padding: 14px 16px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.guest-avatar-cell {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  border: 2px solid var(--border2);
+}
+
+.guest-name-cell { font-weight: 500; color: var(--white); }
+.guest-contact-cell { color: var(--muted); font-size: 12px; }
+
+/* Tier badge */
+.tier-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Points cell with +/- controls */
+.points-cell {
+  display: flex; align-items: center; gap: 8px;
+}
+
+.points-val {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  min-width: 36px;
+  text-align: center;
+  color: var(--gold2);
+}
+
+.points-btn {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--white);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.points-btn:hover { background: var(--surface3); border-color: var(--gold); color: var(--gold2); }
+
+.confirm-toggle {
+  width: 36px; height: 20px;
+  background: var(--surface3);
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.confirm-toggle.on { background: var(--sage); border-color: var(--sage2); }
+.confirm-toggle::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+}
+.confirm-toggle.on::after { transform: translateX(16px); }
+
+.actions-cell { display: flex; gap: 6px; align-items: center; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 32px 28px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes modalIn {
+  from { opacity:0; transform: scale(0.92) translateY(16px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--white);
+}
+
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { color: var(--danger); border-color: var(--danger); }
+
+/* Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.form-grid .full { grid-column: 1/-1; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.form-input, .form-select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.form-input:focus, .form-select:focus { border-color: var(--blush); }
+.form-select option { background: var(--surface2); }
+
+.form-input::placeholder { color: var(--muted); }
+
+.form-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── POINTS QUICK MODAL ── */
+.points-quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.points-quick-btn {
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.points-quick-btn:hover { border-color: var(--gold); color: var(--gold2); background: var(--surface3); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+.empty-state p { font-size: 14px; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--white);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 2000;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  opacity: 0;
+  white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+#toast.success { border-color: var(--success); color: var(--success); }
+#toast.error   { border-color: var(--danger);  color: var(--danger); }
+
+/* ── DELETE CONFIRM ── */
+.delete-confirm {
+  background: rgba(224,112,112,0.08);
+  border: 1px solid rgba(224,112,112,0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.delete-name {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  color: var(--danger);
+  font-style: italic;
+  margin: 8px 0;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .stats-bar { grid-template-columns: 1fr 1fr; }
+  .stat-card.s-top { display: none; }
+  table { font-size: 12px; }
+  thead th:nth-child(4),
+  thead th:nth-child(5),
+  tbody td:nth-child(4),
+  tbody td:nth-child(5) { display: none; }
+  .search-input { width: 160px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .full { grid-column: 1; }
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border2); }
+
+/* Export button animation */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinning { animation: spin 1s linear infinite; display: inline-block; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">D & C</div>
+    <div class="login-subtitle">Panel de Administración</div>
+
+    <div class="login-label">Contraseña de administrador</div>
+    <input class="login-input" id="admin-pass" type="password"
+           placeholder="••••••••" autocomplete="current-password"/>
+
+    <button class="login-btn" onclick="adminLogin()">Ingresar al panel</button>
+
+    <div class="login-error" id="login-error">Contraseña incorrecta. Inténtalo nuevamente.</div>
+    <div style="font-size:11px; color:var(--muted); margin-top:16px; letter-spacing:.5px">
+      Contraseña por defecto: <strong style="color:var(--blush2)">admin2026</strong><br>
+      <span style="opacity:.6">(cámbiala en el código)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div id="app">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-logo">D & C</div>
+    <div class="header-title">Panel de Invitados</div>
+    <button class="header-logout" onclick="adminLogout()">↪ Cerrar sesión</button>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card s-total">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">Invitados</div>
+    </div>
+    <div class="stat-card s-confirm">
+      <div class="stat-num" id="stat-confirmed">0</div>
+      <div class="stat-label">Confirmados</div>
+    </div>
+    <div class="stat-card s-points">
+      <div class="stat-num" id="stat-points">0</div>
+      <div class="stat-label">Pts totales</div>
+    </div>
+    <div class="stat-card s-top">
+      <div class="stat-num" id="stat-top">—</div>
+      <div class="stat-label">🏆 Líder</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-title">Lista de Invitados</div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="search-input" type="text"
+               placeholder="Buscar invitado..."
+               oninput="renderTable()"/>
+      </div>
+      <button class="btn btn-secondary" onclick="exportCSV()">⬇ Exportar</button>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Agregar</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:52px"></th>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Nivel</th>
+            <th>Puntos</th>
+            <th>Confirmado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="guests-tbody"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <div class="empty-icon">💌</div>
+        <p>No hay invitados aún. ¡Agrega el primero!</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ MODAL — ADD / EDIT ═══════════ -->
+<div class="modal-overlay" id="modal-guest">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Nuevo Invitado</div>
+      <button class="modal-close" onclick="closeModal('modal-guest')">×</button>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Nombre *</label>
+        <input class="form-input" id="f-name" placeholder="María González"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Apellido</label>
+        <input class="form-input" id="f-lastname" placeholder="García"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Correo electrónico</label>
+        <input class="form-input" id="f-email" type="email" placeholder="maria@correo.com"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Teléfono / WhatsApp</label>
+        <input class="form-input" id="f-phone" placeholder="+56912345678"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Avatar (emoji)</label>
+        <input class="form-input" id="f-avatar" placeholder="🌸" maxlength="4"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Puntos iniciales</label>
+        <input class="form-input" id="f-points" type="number" min="0" placeholder="0"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Mesa / Grupo</label>
+        <input class="form-input" id="f-table" placeholder="Mesa 1 — Familia"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Notas</label>
+        <input class="form-input" id="f-notes" placeholder="Vegetariano, alergia a nueces..."/>
+      </div>
+      <div class="form-group full" style="flex-direction:row; align-items:center; gap:12px">
+        <div class="confirm-toggle" id="f-confirmed-toggle" onclick="toggleFormConfirm()"></div>
+        <label class="form-label" style="margin:0; cursor:pointer" onclick="toggleFormConfirm()">
+          Asistencia confirmada
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-guest')">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveGuest()">Guardar invitado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL — PUNTOS ═══════════ -->
+<div class="modal-overlay" id="modal-points">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <div class="modal-title">💸 Gestionar Puntos</div>
+      <button class="modal-close" onclick="closeModal('modal-points')">×</button>
+    </div>
+    <div id="points-guest-name" style="font-size:16px; color:var(--muted); margin-bottom:8px"></div>
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px">
+      <div style="font-family:'Fraunces',serif; font-size:48px; color:var(--gold2)" id="points-current">0</div>
+      <div>
+        <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted)">Puntos actuales</div>
+        <div id="points-tier-display" style="font-size:13px; font-weight:600; margin-top:2px">—</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px">Agregar rápido</div>
+    <div class="points-quick-grid">
+      <button class="points-quick-btn" onclick="addQuickPoints(5)">+5 🪙 Simpático</button>
+      <button class="points-quick-btn" onclick="addQuickPoints(20)">+20 🥈 Generoso</button>
+      <button class="points-quick-btn" onclick="addQuickPoints(50)">+50 🥇 Espléndido</button>
+      <button class="points-quick-btn" onclick="addQuickPoints(100)">+100 💎 Legendario</button>
+    </div>
+
+    <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin:16px 0 8px">Monto personalizado</div>
+    <div style="display:flex; gap:8px">
+      <input class="form-input" id="points-custom-val" type="number" placeholder="ej: 25" style="flex:1"/>
+      <button class="btn btn-success" onclick="addCustomPoints(1)">+ Agregar</button>
+      <button class="btn btn-danger" onclick="addCustomPoints(-1)">− Quitar</button>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="closeModal('modal-points')">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL — DELETE ═══════════ -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <div class="modal-title">Eliminar Invitado</div>
+      <button class="modal-close" onclick="closeModal('modal-delete')">×</button>
+    </div>
+    <div class="delete-confirm">
+      ¿Eliminar a este invitado? Esta acción no se puede deshacer.
+      <div class="delete-name" id="delete-name-display">—</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-delete')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+//  CONFIG — cambia la contraseña aquí
+// ════════════════════════════════════════
+const ADMIN_PASSWORD = 'admin2026';
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let guests = [];
+let editingId = null;
+let deletingId = null;
+let pointsGuestId = null;
+let formConfirmed = false;
+
+// ════════════════════════════════════════
+//  STORAGE — localStorage para persistencia
+// ════════════════════════════════════════
+function saveData() {
+  localStorage.setItem('boda_guests', JSON.stringify(guests));
+}
+
+function loadData() {
+  const raw = localStorage.getItem('boda_guests');
+  if (raw) {
+    guests = JSON.parse(raw);
+  } else {
+    // Seed with example guests
+    guests = [
+      { id: uid(), name: 'María', lastname: 'González',  email: 'maria@correo.com',  phone: '+56911111111', avatar: '💐', points: 0,   confirmed: false, table: 'Mesa 1 — Familia', notes: '' },
+      { id: uid(), name: 'Pedro', lastname: 'Soto',       email: 'pedro@gmail.com',   phone: '+56912345678', avatar: '🎩', points: 50,  confirmed: true,  table: 'Mesa 2 — Amigos',  notes: 'Vegetariano' },
+      { id: uid(), name: 'Ana',   lastname: 'Ramírez',    email: 'ana@hotmail.com',   phone: '',             avatar: '🌺', points: 20,  confirmed: true,  table: 'Mesa 1 — Familia', notes: '' },
+      { id: uid(), name: 'Carlos',lastname: 'Muñoz',      email: '',                  phone: '+56987654321', avatar: '🥂', points: 100, confirmed: true,  table: 'Mesa 3 — Trabajo', notes: 'Alergia frutos secos' },
+    ];
+    saveData();
+  }
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════
+function adminLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  const err  = document.getElementById('login-error');
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.add('show');
+    sessionStorage.setItem('admin_auth', '1');
+    err.classList.remove('show');
+    render();
+  } else {
+    err.classList.add('show');
+    document.getElementById('admin-pass').value = '';
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('admin_auth');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('admin-pass').value = '';
+}
+
+document.getElementById('admin-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminLogin();
+});
+
+// Check existing session
+if (sessionStorage.getItem('admin_auth') === '1') {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('show');
+}
+
+// ════════════════════════════════════════
+//  TIER HELPERS
+// ════════════════════════════════════════
+function getTier(points) {
+  if (points >= 100) return { label: '💎 Legendario', color: 'var(--tier4)' };
+  if (points >= 50)  return { label: '🥇 Espléndido', color: 'var(--tier3)' };
+  if (points >= 20)  return { label: '🥈 Generoso',   color: 'var(--tier2)' };
+  if (points >= 5)   return { label: '🪙 Simpático',  color: 'var(--tier1)' };
+  return { label: '— Sin nivel', color: 'var(--tier0)' };
+}
+
+// ════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════
+function render() {
+  loadData();
+  updateStats();
+  renderTable();
+}
+
+function updateStats() {
+  const total     = guests.length;
+  const confirmed = guests.filter(g => g.confirmed).length;
+  const totalPts  = guests.reduce((s, g) => s + (g.points||0), 0);
+  const top       = guests.reduce((a, g) => (!a || g.points > a.points) ? g : a, null);
+
+  document.getElementById('stat-total').textContent     = total;
+  document.getElementById('stat-confirmed').textContent = confirmed;
+  document.getElementById('stat-points').textContent    = totalPts;
+  document.getElementById('stat-top').textContent       = top ? top.name : '—';
+}
+
+function renderTable() {
+  const query = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const tbody = document.getElementById('guests-tbody');
+  const empty = document.getElementById('empty-state');
+
+  const filtered = guests.filter(g => {
+    const full = `${g.name} ${g.lastname} ${g.email} ${g.phone} ${g.table}`.toLowerCase();
+    return full.includes(query);
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(g => {
+    const tier = getTier(g.points || 0);
+    return `
+    <tr>
+      <td><div class="guest-avatar-cell">${g.avatar || '🌸'}</div></td>
+      <td>
+        <div class="guest-name-cell">${g.name} ${g.lastname || ''}</div>
+        ${g.table ? `<div class="guest-contact-cell">${g.table}</div>` : ''}
+        ${g.notes ? `<div class="guest-contact-cell" style="color:var(--gold);font-size:11px">📌 ${g.notes}</div>` : ''}
+      </td>
+      <td>
+        ${g.email ? `<div class="guest-contact-cell">✉ ${g.email}</div>` : ''}
+        ${g.phone ? `<div class="guest-contact-cell">📱 ${g.phone}</div>` : ''}
+        ${!g.email && !g.phone ? '<div class="guest-contact-cell">—</div>' : ''}
+      </td>
+      <td>
+        <span class="tier-badge" style="background:${tier.color}22; color:${tier.color}; border:1px solid ${tier.color}44">
+          ${tier.label}
+        </span>
+      </td>
+      <td>
+        <div class="points-cell">
+          <button class="points-btn" onclick="quickDeductPoint('${g.id}')">−</button>
+          <div class="points-val">${g.points || 0}</div>
+          <button class="points-btn" onclick="quickAddPoint('${g.id}')">+</button>
+          <button class="btn btn-sm btn-secondary" onclick="openPointsModal('${g.id}')" style="margin-left:4px" title="Gestionar puntos">💸</button>
+        </div>
+      </td>
+      <td>
+        <div class="confirm-toggle ${g.confirmed ? 'on' : ''}" onclick="toggleConfirm('${g.id}')"></div>
+      </td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn btn-sm btn-secondary" onclick="openEditModal('${g.id}')">✏ Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="openDeleteModal('${g.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════
+//  QUICK POINT ACTIONS
+// ════════════════════════════════════════
+function quickAddPoint(id) {
+  const g = guests.find(x => x.id === id);
+  if (!g) return;
+  g.points = (g.points || 0) + 5;
+  saveData(); render(); showToast(`+5 puntos para ${g.name} 🎉`, 'success');
+}
+
+function quickDeductPoint(id) {
+  const g = guests.find(x => x.id === id);
+  if (!g) return;
+  g.points = Math.max(0, (g.points || 0) - 5);
+  saveData(); render(); showToast(`-5 puntos para ${g.name}`, 'error');
+}
+
+function toggleConfirm(id) {
+  const g = guests.find(x => x.id === id);
+  if (!g) return;
+  g.confirmed = !g.confirmed;
+  saveData(); render();
+  showToast(g.confirmed ? `${g.name} confirmó asistencia ✅` : `${g.name} marcado sin confirmar`, g.confirmed ? 'success' : '');
+}
+
+// ════════════════════════════════════════
+//  MODAL — ADD / EDIT
+// ════════════════════════════════════════
+function openAddModal() {
+  editingId = null;
+  formConfirmed = false;
+  document.getElementById('modal-title').textContent = 'Nuevo Invitado';
+  document.getElementById('modal-save-btn').textContent = 'Guardar invitado';
+  clearForm();
+  openModal('modal-guest');
+}
+
+function openEditModal(id) {
+  const g = guests.find(x => x.id === id);
+  if (!g) return;
+  editingId = id;
+  formConfirmed = g.confirmed || false;
+
+  document.getElementById('modal-title').textContent = 'Editar Invitado';
+  document.getElementById('modal-save-btn').textContent = 'Guardar cambios';
+
+  document.getElementById('f-name').value     = g.name || '';
+  document.getElementById('f-lastname').value = g.lastname || '';
+  document.getElementById('f-email').value    = g.email || '';
+  document.getElementById('f-phone').value    = g.phone || '';
+  document.getElementById('f-avatar').value   = g.avatar || '';
+  document.getElementById('f-points').value   = g.points || 0;
+  document.getElementById('f-table').value    = g.table || '';
+  document.getElementById('f-notes').value    = g.notes || '';
+
+  const tog = document.getElementById('f-confirmed-toggle');
+  tog.classList.toggle('on', formConfirmed);
+
+  openModal('modal-guest');
+}
+
+function toggleFormConfirm() {
+  formConfirmed = !formConfirmed;
+  document.getElementById('f-confirmed-toggle').classList.toggle('on', formConfirmed);
+}
+
+function clearForm() {
+  ['f-name','f-lastname','f-email','f-phone','f-avatar','f-table','f-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-points').value = 0;
+  document.getElementById('f-confirmed-toggle').classList.remove('on');
+}
+
+function saveGuest() {
+  const name  = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim().toLowerCase();
+  const phone = document.getElementById('f-phone').value.trim();
+
+  if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
+  if (!email && !phone) { showToast('Agrega al menos correo o teléfono', 'error'); return; }
+
+  if (editingId) {
+    const g = guests.find(x => x.id === editingId);
+    Object.assign(g, {
+      name, email, phone,
+      lastname:  document.getElementById('f-lastname').value.trim(),
+      avatar:    document.getElementById('f-avatar').value.trim() || '🌸',
+      points:    parseInt(document.getElementById('f-points').value) || 0,
+      table:     document.getElementById('f-table').value.trim(),
+      notes:     document.getElementById('f-notes').value.trim(),
+      confirmed: formConfirmed,
+    });
+    showToast(`${name} actualizado ✅`, 'success');
+  } else {
+    guests.push({
+      id:        uid(),
+      name,
+      lastname:  document.getElementById('f-lastname').value.trim(),
+      email,
+      phone,
+      avatar:    document.getElementById('f-avatar').value.trim() || '🌸',
+      points:    parseInt(document.getElementById('f-points').value) || 0,
+      table:     document.getElementById('f-table').value.trim(),
+      notes:     document.getElementById('f-notes').value.trim(),
+      confirmed: formConfirmed,
+    });
+    showToast(`${name} agregado 🎉`, 'success');
+  }
+
+  saveData();
+  render();
+  closeModal('modal-guest');
+}
+
+// ════════════════════════════════════════
+//  MODAL — PUNTOS
+// ════════════════════════════════════════
+function openPointsModal(id) {
+  pointsGuestId = id;
+  refreshPointsModal();
+  openModal('modal-points');
+}
+
+function refreshPointsModal() {
+  const g = guests.find(x => x.id === pointsGuestId);
+  if (!g) return;
+  document.getElementById('points-guest-name').textContent = `${g.avatar || '🌸'} ${g.name} ${g.lastname || ''}`;
+  document.getElementById('points-current').textContent    = g.points || 0;
+  const tier = getTier(g.points || 0);
+  const td = document.getElementById('points-tier-display');
+  td.textContent  = tier.label;
+  td.style.color  = tier.color;
+}
+
+function addQuickPoints(pts) {
+  const g = guests.find(x => x.id === pointsGuestId);
+  if (!g) return;
+  g.points = (g.points || 0) + pts;
+  saveData(); render(); refreshPointsModal();
+  showToast(`+${pts} puntos para ${g.name} 🎉`, 'success');
+}
+
+function addCustomPoints(sign) {
+  const val = parseInt(document.getElementById('points-custom-val').value);
+  if (!val || val <= 0) { showToast('Ingresa un valor válido', 'error'); return; }
+  const g = guests.find(x => x.id === pointsGuestId);
+  if (!g) return;
+  const delta = val * sign;
+  g.points = Math.max(0, (g.points || 0) + delta);
+  saveData(); render(); refreshPointsModal();
+  document.getElementById('points-custom-val').value = '';
+  showToast(`${delta > 0 ? '+' : ''}${delta} puntos para ${g.name}`, delta > 0 ? 'success' : 'error');
+}
+
+// ════════════════════════════════════════
+//  MODAL — DELETE
+// ════════════════════════════════════════
+function openDeleteModal(id) {
+  deletingId = id;
+  const g = guests.find(x => x.id === id);
+  document.getElementById('delete-name-display').textContent = g ? `${g.name} ${g.lastname || ''}` : '—';
+  openModal('modal-delete');
+}
+
+function confirmDelete() {
+  const g = guests.find(x => x.id === deletingId);
+  guests = guests.filter(x => x.id !== deletingId);
+  saveData(); render();
+  closeModal('modal-delete');
+  if (g) showToast(`${g.name} eliminado`, 'error');
+}
+
+// ════════════════════════════════════════
+//  EXPORT CSV
+// ════════════════════════════════════════
+function exportCSV() {
+  const headers = ['Nombre','Apellido','Email','Teléfono','Avatar','Puntos','Nivel','Mesa','Notas','Confirmado'];
+  const rows = guests.map(g => [
+    g.name, g.lastname, g.email, g.phone, g.avatar,
+    g.points, getTier(g.points||0).label.replace(/[^\w\s]/g,'').trim(),
+    g.table, g.notes, g.confirmed ? 'Sí' : 'No'
+  ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `invitados-boda-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exportado ✅', 'success');
+}
+
+// ════════════════════════════════════════
+//  MODAL HELPERS
+// ════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2800);
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+loadData();
+if (sessionStorage.getItem('admin_auth') === '1') render();
+</script>
+</body>
+</html>
