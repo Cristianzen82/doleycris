@@ -2156,7 +2156,7 @@ body.logged-in { padding-bottom: 70px; }
 // ════════════════════════════════════════════════════
 //  LISTA DE INVITADOS AUTORIZADOS
 // ════════════════════════════════════════════════════
-const GUESTS = [
+/* const GUESTS = [
   { id: 'maria@correo.com',   name: 'María González',    avatar: '💐', points: 0   },
   { id: '+56912345678',       name: 'Pedro Soto',         avatar: '🎩', points: 50  },
   { id: 'pedro@gmail.com',    name: 'Pedro Soto',         avatar: '🎩', points: 50  },
@@ -2164,7 +2164,36 @@ const GUESTS = [
   { id: '+56987654321',       name: 'Carlos Muñoz',       avatar: '🥂', points: 100 },
   { id: 'prueba@test.com',    name: 'Invitado de Prueba', avatar: '✨', points: 0   },
   // ── Agrega más invitados aquí ──
-];
+]; */
+// ── Carga invitados desde admin (localStorage compartido) ──
+function loadGuests() {
+  const raw = localStorage.getItem('boda_guests');
+  if (!raw) return [];
+  try {
+    const data = JSON.parse(raw);
+    // Construye lista plana con email Y teléfono como claves de acceso
+    const list = [];
+    data.forEach(g => {
+      if (g.email) list.push({
+        id:     g.email.trim().toLowerCase(),
+        name:   `${g.name} ${g.lastname || ''}`.trim(),
+        avatar: g.avatar || '🌸',
+        points: g.points || 0
+      });
+      if (g.phone) list.push({
+        id:     g.phone.trim().toLowerCase().replace(/\s+/g,''),
+        name:   `${g.name} ${g.lastname || ''}`.trim(),
+        avatar: g.avatar || '🌸',
+        points: g.points || 0
+      });
+    });
+    return list;
+  } catch(e) {
+    return [];
+  }
+}
+
+const GUESTS = loadGuests();
 
 // ════════════════════════════════════════════════════
 //  ENVELOPE OPEN ANIMATION
