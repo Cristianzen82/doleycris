@@ -2369,7 +2369,7 @@ const io = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.12 });
 document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
-</script>
+
 
 // ════════════════════════════════════════════════════
 //  LÓGICA DE ACCESO
@@ -2465,5 +2465,6 @@ if (savedGuest) {
   document.getElementById('envelope-intro').style.display = 'none';
   showBanner(JSON.parse(savedGuest));
 }
+  </script>
 </body>
 </html>
