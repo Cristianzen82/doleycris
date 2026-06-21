@@ -1072,7 +1072,25 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.banner-rsvp {
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: var(--mid-grey);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
+.banner-rsvp.ok {
+  color: var(--sage);
+  font-weight: 600;
+}
+
+.banner-rsvp.pending {
+  color: #b07a00;
+  font-weight: 600;
+}
 .banner-welcome {
   font-size: 10px;
   letter-spacing: 1px;
@@ -1686,6 +1704,7 @@ body.logged-in { padding-bottom: 70px; }
   <div class="banner-info">
     <div class="banner-welcome">¡Bienvenid@!</div>
     <div class="banner-name" id="banner-name">Invitado</div>
+    <div class="banner-rsvp" id="banner-rsvp">Aún no confirma asistencia</div>
   </div>
   <div class="banner-points-wrap">
     <div class="banner-points-label">💸 Mis puntos</div>
@@ -2179,7 +2198,8 @@ function loadGuests() {
         id: g.email.trim().toLowerCase(),
         name: `${g.name} ${g.lastname || ''}`.trim(),
         avatar: g.avatar || '🌸',
-        points: g.points || 0
+        points: g.points || 0,
+        confirmed: g.confirmed === true || g.attendance === true || g.rsvp === 'yes'
       });
 
       if (g.phone) list.push({
@@ -2256,6 +2276,15 @@ function showBanner(guest) {
   tierEl.style.color       = tier.color;
   tierEl.style.background  = tier.color + '22';
 
+  const rsvpEl = document.getElementById('banner-rsvp');
+  if (guest.confirmed) {
+    rsvpEl.textContent = 'Asistencia confirmada';
+    rsvpEl.className = 'banner-rsvp ok';
+  } else {
+    rsvpEl.textContent = 'Aún no confirma asistencia';
+    rsvpEl.className = 'banner-rsvp pending';
+  }
+  
   banner.style.display = 'flex';
   document.body.classList.add('logged-in');
 }
