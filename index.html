@@ -1549,7 +1549,11 @@ body.logged-in { padding-bottom: 70px; }
   <!-- Envelope + letter -->
   <div class="env-envelope-wrap" id="envWrap">
 
-    <!-- Letter (rises when opened) -->
+
+
+    <!-- Envelope SVG -->
+    <div class="envelope-svg-wrap" id="envelopeSvg" onclick="openEnvelope()">
+          <!-- Letter (rises when opened) -->
     <div class="env-letter" id="envLetter">
       <div class="env-letter-border">
         <div class="env-letter-corner tl"></div>
@@ -1566,9 +1570,7 @@ body.logged-in { padding-bottom: 70px; }
         <div class="env-letter-sub">Dolennis & Cristian · 2026</div>
       </div>
     </div>
-
-    <!-- Envelope SVG -->
-    <div class="envelope-svg-wrap" id="envelopeSvg" onclick="openEnvelope()">
+      
       <svg viewBox="0 0 280 180" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Envelope body -->
         <rect x="0" y="30" width="280" height="150" rx="6" fill="#f5ede0"/>
