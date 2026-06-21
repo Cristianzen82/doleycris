@@ -1075,7 +1075,6 @@ footer {
 .banner-rsvp {
   font-size: 10px;
   letter-spacing: 0.6px;
-  color: var(--mid-grey);
   margin-top: 3px;
   white-space: nowrap;
   overflow: hidden;
@@ -1091,6 +1090,7 @@ footer {
   color: #b07a00;
   font-weight: 600;
 }
+  
 .banner-welcome {
   font-size: 10px;
   letter-spacing: 1px;
@@ -1704,7 +1704,7 @@ body.logged-in { padding-bottom: 70px; }
   <div class="banner-info">
     <div class="banner-welcome">¡Bienvenid@!</div>
     <div class="banner-name" id="banner-name">Invitado</div>
-    <div class="banner-rsvp" id="banner-rsvp">Aún no confirma asistencia</div>
+    <div class="banner-rsvp pending" id="banner-rsvp">Aún no confirma asistencia</div>
   </div>
   <div class="banner-points-wrap">
     <div class="banner-points-label">💸 Mis puntos</div>
@@ -2194,6 +2194,13 @@ function loadGuests() {
     const list = [];
 
     data.forEach(g => {
+      const guestData = {
+        name: `${g.name} ${g.lastname || ''}`.trim(),
+        avatar: g.avatar || '🌸',
+        points: g.points || 0,
+        confirmed: g.confirmed === true
+      };
+      
       if (g.email) list.push({
         id: g.email.trim().toLowerCase(),
         name: `${g.name} ${g.lastname || ''}`.trim(),
@@ -2265,16 +2272,17 @@ function getTierInfo(points) {
 }
 
 function showBanner(guest) {
-  const banner   = document.getElementById('guest-banner');
-  document.getElementById('banner-name').textContent   = guest.name;
+  const banner = document.getElementById('guest-banner');
+
+  document.getElementById('banner-name').textContent = guest.name;
   document.getElementById('banner-avatar').textContent = guest.avatar || '🌸';
   document.getElementById('banner-points').textContent = guest.points;
 
   const tier = getTierInfo(guest.points);
   const tierEl = document.getElementById('banner-tier');
-  tierEl.textContent       = tier.label;
-  tierEl.style.color       = tier.color;
-  tierEl.style.background  = tier.color + '22';
+  tierEl.textContent = tier.label;
+  tierEl.style.color = tier.color;
+  tierEl.style.background = tier.color + '22';
 
   const rsvpEl = document.getElementById('banner-rsvp');
   if (guest.confirmed) {
@@ -2284,7 +2292,7 @@ function showBanner(guest) {
     rsvpEl.textContent = 'Aún no confirma asistencia';
     rsvpEl.className = 'banner-rsvp pending';
   }
-  
+
   banner.style.display = 'flex';
   document.body.classList.add('logged-in');
 }
