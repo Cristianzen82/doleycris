@@ -2192,13 +2192,14 @@ function loadGuests() {
   try {
     const data = JSON.parse(raw);
     const list = [];
-
+    
     data.forEach(g => {
+      const isConfirmed = g.confirmed === true;
       const guestData = {
         name: `${g.name} ${g.lastname || ''}`.trim(),
         avatar: g.avatar || '🌸',
         points: g.points || 0,
-        confirmed: g.confirmed === true
+        confirmed: isConfirmed
       };
       
       if (g.email) list.push({
@@ -2206,14 +2207,15 @@ function loadGuests() {
         name: `${g.name} ${g.lastname || ''}`.trim(),
         avatar: g.avatar || '🌸',
         points: g.points || 0,
-        confirmed: g.confirmed === true || g.attendance === true || g.rsvp === 'yes'
+        confirmed: isConfirmed
       });
 
       if (g.phone) list.push({
         id: g.phone.trim().toLowerCase().replace(/\s+/g, ''),
         name: `${g.name} ${g.lastname || ''}`.trim(),
         avatar: g.avatar || '🌸',
-        points: g.points || 0
+        points: g.points || 0,
+        confirmed: isConfirmed
       });
     });
 
