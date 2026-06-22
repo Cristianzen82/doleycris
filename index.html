@@ -2370,9 +2370,13 @@ document.head.appendChild(shakeStyle);
 
 // Restore session if already logged in
 const savedGuest = sessionStorage.getItem('wedding_guest');
+
 if (savedGuest) {
+  const parsedGuest = JSON.parse(savedGuest);
+  const freshGuest = GUESTS.find(g => g.id === parsedGuest.id) || parsedGuest;
+
   document.getElementById('envelope-intro').style.display = 'none';
-  showBanner(JSON.parse(savedGuest));
+  showBanner(freshGuest);
 }
 
 // ════════════════════════════════════════════════════
