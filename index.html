@@ -2198,9 +2198,7 @@ body.logged-in { padding-bottom: 70px; }
 
     </div>
 
-    <a href="#" onclick="alert('Agrega aquí el link de pago o datos bancarios')" class="plata-btn">
-      💸 Quiero jugar
-    </a>
+    <a href="#" onclick="handlePlataClick(event)" class="plata-btn"> 💸 Quiero jugar </a>
 
     <p class="plata-footnote">
       * Los montos son en pesos chilenos (CLP) y son solo referenciales.<br>
@@ -2435,6 +2433,70 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
+function handlePlataClick(event) {
+  event.preventDefault();
+
+  const savedGuest = sessionStorage.getItem('wedding_guest');
+  if (!savedGuest) {
+    alert('Primero debes ingresar con tu correo o teléfono.');
+    document.getElementById('gate-login').classList.add('show');
+    return;
+  }
+
+  let sessionGuest;
+  try {
+    sessionGuest = JSON.parse(savedGuest);
+  } catch (e) {
+    alert('No pudimos recuperar tu sesión. Intenta ingresar nuevamente.');
+    return;
+  }
+
+  const raw = localStorage.getItem('boda_guests');
+  if (!raw) {
+    alert('No encontramos la lista de invitados.');
+    return;
+  }
+
+  let guests;
+  try {
+    guests = JSON.parse(raw);
+  } catch (e) {
+    alert('Los datos de invitados están dañados.');
+    return;
+  }
+
+  const sessionId = normalizeInput(sessionGuest.id || '');
+  const guestIndex = guests.findIndex(g => {
+    const email = normalizeInput(g.email || '');
+    const phone = normalizeInput((g.phone || '').replace(/\s+/g, ''));
+    return email === sessionId || phone === sessionId;
+  });
+
+  if (guestIndex === -1) {
+    alert('No encontramos tu registro de invitado.');
+    return;
+  }
+
+  guests[guestIndex].plataRequested = true;
+  guests[guestIndex].plataRequestedAt = new Date().toISOString();
+
+  localStorage.setItem('boda_guests', JSON.stringify(guests));
+
+  sessionGuest.plataRequested = true;
+  sessionGuest.plataRequestedAt = guests[guestIndex].plataRequestedAt;
+  sessionStorage.setItem('wedding_guest', JSON.stringify(sessionGuest));
+
+  alert('¡Quedó registrado! Ahora te mostramos los datos para jugar.');
+
+  // Aquí puedes poner tu link real:
+  // window.open('https://tulinkdepago.cl', '_blank');
+
+  // O mostrar datos bancarios:
+  // alert('Transferir a: ...');
+}
+
+
+  
 // ════════════════════════════════════════════════════
 //  SCROLL ANIMATIONS
 // ════════════════════════════════════════════════════
