@@ -713,6 +713,18 @@ footer {
   margin: 28px auto;
 }
 
+.polaroid-stack:hover .polaroid:nth-child(1) {
+  transform: rotate(-12deg) translateY(-6px);
+}
+
+.polaroid-stack:hover .polaroid:nth-child(2) {
+  transform: rotate(8deg) translateY(-10px);
+}
+
+.polaroid-stack:hover .polaroid:nth-child(3) {
+  transform: rotate(-1deg) translateY(-14px);
+}
+
 .polaroid {
   position: absolute;
   width: 160px;
@@ -720,6 +732,7 @@ footer {
   padding: 10px 10px 28px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.1);
   border-radius: 2px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
 .polaroid:nth-child(1) { transform: rotate(-8deg); top: 20px; left: 0; z-index: 1; }
