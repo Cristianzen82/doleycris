@@ -198,7 +198,7 @@ body::before {
 /* ── STATS BAR ── */
 .stats-bar {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   padding: 20px 24px;
   background: var(--bg);
@@ -221,7 +221,7 @@ body::before {
 .stat-card.s-total::after  { background: var(--dusty); }
 .stat-card.s-confirm::after{ background: var(--sage); }
 .stat-card.s-points::after { background: var(--gold); }
-.stat-card.confirmed-people::after { background: var(--rose); }
+.stat-card.s-confirmed-people::after { background: var(--blush); }
 .stat-card.s-top::after    { background: var(--blush); }
 
 .stat-num {
@@ -235,7 +235,7 @@ body::before {
 .stat-card.s-total  .stat-num { color: var(--dusty2); }
 .stat-card.s-confirm .stat-num{ color: var(--sage2); }
 .stat-card.s-points .stat-num { color: var(--gold2); }
-.stat-card.s-confirmed-people .stat-num { color: var(--rose2); }
+.stat-card.s-confirmed-people .stat-num { color: var(--blush2); }
 .stat-card.s-top    .stat-num { color: var(--blush2); font-size: 20px; }
 
 .stat-label {
