@@ -708,21 +708,24 @@ footer {
 /* Polaroid stack decoration */
 .polaroid-stack {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 240px;
+  height: 230px;
   margin: 28px auto;
 }
 
 .polaroid-stack:hover .polaroid:nth-child(1) {
-  transform: rotate(-12deg) translateY(-6px);
+  transform: rotate(-22deg) translate(-26px, -10px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.14);
 }
 
 .polaroid-stack:hover .polaroid:nth-child(2) {
-  transform: rotate(8deg) translateY(-10px);
+  transform: rotate(18deg) translate(26px, -14px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.14);
 }
 
 .polaroid-stack:hover .polaroid:nth-child(3) {
-  transform: rotate(-1deg) translateY(-14px);
+  transform: rotate(0deg) translateY(-18px);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.16);
 }
 
 .polaroid {
@@ -732,7 +735,7 @@ footer {
   padding: 10px 10px 28px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.1);
   border-radius: 2px;
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  transition: transform 0.45s ease, box-shadow 0.45s ease;
 }
 
 .polaroid:nth-child(1) { transform: rotate(-8deg); top: 20px; left: 0; z-index: 1; }
