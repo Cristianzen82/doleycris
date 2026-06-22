@@ -709,39 +709,38 @@ footer {
 .polaroid-stack {
   position: relative;
   width: 280px;
-  height: 245px;
+  height: 230px;
   margin: 28px auto;
 }
 
 .polaroid {
   position: absolute;
-  width: 158px;
+  width: 160px;
   background: white;
   padding: 10px 10px 28px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
   border-radius: 2px;
-  transition: transform 0.45s ease, box-shadow 0.45s ease;
 }
 
 .polaroid:nth-child(1) {
-  top: 26px;
+  transform: rotate(-10deg);
+  top: 30px;
   left: 0;
   z-index: 1;
-  transform: rotate(-18deg);
 }
 
 .polaroid:nth-child(2) {
-  top: 10px;
-  left: 92px;
+  transform: rotate(8deg);
+  top: 22px;
+  left: 120px;
   z-index: 2;
-  transform: rotate(18deg);
 }
 
 .polaroid:nth-child(3) {
-  top: 0;
-  left: 48px;
-  z-index: 3;
   transform: rotate(-2deg);
+  top: 0;
+  left: 60px;
+  z-index: 3;
 }
 
 .polaroid-stack:hover .polaroid:nth-child(1) {
