@@ -1057,7 +1057,7 @@ function renderTable() {
       </td>
       <td>
         <input type="number" min="1" value="${g.attendeesCount || 1}"
-          onchange="updateGuestField(${g.id || i}, 'attendeesCount', this.value)"
+          onchange="updateGuestField('${g.id}', 'attendeesCount', this.value)"
           style="width:72px; padding:8px 10px; border:1px solid #ddd; border-radius:8px;"
         >
       </td>
@@ -1244,18 +1244,19 @@ function confirmDelete() {
   if (g) showToast(`${g.name} eliminado`, 'error');
 }
 
-const totalPeople = guests.reduce((sum, g) => sum + (parseInt(g.attendeesCount, 10) || 1), 0);
-function updateGuestField(index, field, value) {
-  if (!guests[index]) return;
+
+function updateGuestField(id, field, value) {
+  const guest = guests.find(g => g.id === id);
+  if (!guest) return;
 
   if (field === 'attendeesCount') {
     const n = parseInt(value, 10);
-    guests[index][field] = Number.isNaN(n) || n < 1 ? 1 : n;
+    guest[field] = Number.isNaN(n) || n < 1 ? 1 : n;
   } else {
-    guests[index][field] = value;
+    guest[field] = value;
   }
 
-  localStorage.setItem('boda_guests', JSON.stringify(guests));
+  saveData();
   renderTable();
   updateStats();
 }
