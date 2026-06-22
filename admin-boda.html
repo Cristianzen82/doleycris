@@ -614,6 +614,31 @@ tbody td {
   margin: 8px 0;
 }
 
+
+.flag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.flag-badge.on {
+  background: rgba(201, 148, 58, 0.14);
+  border: 1px solid rgba(201, 148, 58, 0.32);
+  color: var(--gold2);
+}
+
+.flag-badge.off {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+  
 /* ── RESPONSIVE ── */
 @media (max-width: 640px) {
   .stats-bar { grid-template-columns: 1fr 1fr; }
@@ -717,6 +742,7 @@ tbody td {
             <th>Contacto</th>
             <th>Nivel</th>
             <th>Puntos</th>
+            <th>Juego</th>
             <th>Confirmado</th>
             <th>Acciones</th>
           </tr>
@@ -1001,6 +1027,15 @@ function renderTable() {
           <button class="btn btn-sm btn-secondary" onclick="openPointsModal('${g.id}')" style="margin-left:4px" title="Gestionar puntos">💸</button>
         </div>
       </td>
+      <td>  ${g.plataRequested 
+              ? `<span class="flag-badge on">💸 Sí pidió</span>`
+              : `<span class="flag-badge off">—</span>`
+          }
+            ${g.plataRequestedAt
+              ? `<div class="guest-contact-cell">${new Date(g.plataRequestedAt).toLocaleString('es-CL')}</div>`
+              : ''
+            }
+      </td>
       <td>
         <div class="confirm-toggle ${g.confirmed ? 'on' : ''}" onclick="toggleConfirm('${g.id}')"></div>
       </td>
@@ -1191,11 +1226,24 @@ function confirmDelete() {
 //  EXPORT CSV
 // ════════════════════════════════════════
 function exportCSV() {
-  const headers = ['Nombre','Apellido','Email','Teléfono','Avatar','Puntos','Nivel','Mesa','Notas','Confirmado'];
+  const headers = [
+    'Nombre','Apellido','Email','Teléfono','Avatar','Puntos','Nivel',
+    'Mesa','Notas','Confirmado','DevuelvePlata','FechaMarca'
+  ];
+
   const rows = guests.map(g => [
-    g.name, g.lastname, g.email, g.phone, g.avatar,
-    g.points, getTier(g.points||0).label.replace(/[^\w\s]/g,'').trim(),
-    g.table, g.notes, g.confirmed ? 'Sí' : 'No'
+    g.name,
+    g.lastname,
+    g.email,
+    g.phone,
+    g.avatar,
+    g.points,
+    getTier(g.points||0).label.replace(/[^\w\s]/g,'').trim(),
+    g.table,
+    g.notes,
+    g.confirmed ? 'Sí' : 'No',
+    g.plataRequested ? 'Sí' : 'No',
+    g.plataRequestedAt || ''
   ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
 
   const csv = [headers.join(','), ...rows].join('\n');
