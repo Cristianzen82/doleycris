@@ -744,6 +744,7 @@ tbody td {
             <th>Puntos</th>
             <th>Juego</th>
             <th>Confirmado</th>
+            <th>Personas</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -1040,6 +1041,12 @@ function renderTable() {
         <div class="confirm-toggle ${g.confirmed ? 'on' : ''}" onclick="toggleConfirm('${g.id}')"></div>
       </td>
       <td>
+        <input type="number" min="1" value="${g.attendeesCount || 1}"
+          onchange="updateGuestField(${g.id || i}, 'attendeesCount', this.value)"
+          style="width:72px; padding:8px 10px; border:1px solid #ddd; border-radius:8px;"
+        >
+      </td>
+      <td>
         <div class="actions-cell">
           <button class="btn btn-sm btn-secondary" onclick="openEditModal('${g.id}')">✏ Editar</button>
           <button class="btn btn-sm btn-danger" onclick="openDeleteModal('${g.id}')">🗑</button>
@@ -1222,6 +1229,23 @@ function confirmDelete() {
   if (g) showToast(`${g.name} eliminado`, 'error');
 }
 
+const totalPeople = guests.reduce((sum, g) => sum + (parseInt(g.attendeesCount, 10) || 1), 0);
+function updateGuestField(index, field, value) {
+  if (!guests[index]) return;
+
+  if (field === 'attendeesCount') {
+    const n = parseInt(value, 10);
+    guests[index][field] = Number.isNaN(n) || n < 1 ? 1 : n;
+  } else {
+    guests[index][field] = value;
+  }
+
+  localStorage.setItem('boda_guests', JSON.stringify(guests));
+  renderTable();
+  updateStats();
+}
+
+  
 // ════════════════════════════════════════
 //  EXPORT CSV
 // ════════════════════════════════════════
