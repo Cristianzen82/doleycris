@@ -714,6 +714,10 @@ tbody td {
       <div class="stat-num" id="stat-top">—</div>
       <div class="stat-label">🏆 Líder</div>
     </div>
+    <div class="stat-card s-confirmed-people">
+      <div class="stat-num" id="stat-confirmed-people">0</div>
+      <div class="stat-label">Personas confirmadas</div>
+    </div>
   </div>
 
   <!-- Main -->
@@ -971,15 +975,24 @@ function render() {
 }
 
 function updateStats() {
-  const total     = guests.length;
+  const total = guests.length;
   const confirmed = guests.filter(g => g.confirmed).length;
-  const totalPts  = guests.reduce((s, g) => s + (g.points||0), 0);
-  const top       = guests.reduce((a, g) => (!a || g.points > a.points) ? g : a, null);
+  const totalPts = guests.reduce((s, g) => s + (g.points || 0), 0);
+  const top = guests.reduce((a, g) => (!a || (g.points || 0) > (a.points || 0)) ? g : a, null);
 
-  document.getElementById('stat-total').textContent     = total;
+  const confirmedPeople = guests
+    .filter(g => g.confirmed)
+    .reduce((sum, g) => sum + (parseInt(g.attendeesCount, 10) || 1), 0);
+
+  document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-confirmed').textContent = confirmed;
-  document.getElementById('stat-points').textContent    = totalPts;
-  document.getElementById('stat-top').textContent       = top ? top.name : '—';
+  document.getElementById('stat-points').textContent = totalPts;
+  document.getElementById('stat-top').textContent = top ? top.name : '—';
+
+  const confirmedPeopleEl = document.getElementById('stat-confirmed-people');
+  if (confirmedPeopleEl) {
+    confirmedPeopleEl.textContent = confirmedPeople;
+  }
 }
 
 function renderTable() {
